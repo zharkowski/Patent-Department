@@ -1,5 +1,5 @@
 <?php
-include_once 'DataBaseConnection.php';
+include_once 'DBConnection.php';
 use DB\DBConnection as DBConnection;
 
 class User
@@ -17,7 +17,12 @@ class User
     }
 
     private function getUserIdByCredentials($login, $password) {
-        $query = "SELECT users.id, users.group_id, users.password_hash, users.name, groups.name FROM patent_department_db.users INNER JOIN patent_department_db.groups ON (users.group_id = groups.id) WHERE login = ?";
+        $query = "SELECT users.id, users.group_id, users.password_hash, users.name, groups.name 
+          FROM patent_department_db.users 
+          INNER JOIN patent_department_db.groups 
+            ON (users.group_id = groups.id) 
+          WHERE login = ?";
+
         if ($stmt = $this->mysqli->prepare($query)) {
             $stmt->bind_param("s", $login);
             $stmt->execute();
@@ -34,7 +39,14 @@ class User
     }
 
     private function getUserIdBySessionId($sessionId) {
-        $query = "SELECT users.id, users.group_id, users.login, users.name, groups.name FROM patent_department_db.user_sessions INNER JOIN patent_department_db.users ON (users.id = user_sessions.user_id) INNER JOIN patent_department_db.groups ON (groups.id = users.group_id) WHERE user_sessions.id = ? AND user_sessions.valid_until >= NOW()";
+        $query = "SELECT users.id, users.group_id, users.login, users.name, groups.name 
+          FROM patent_department_db.user_sessions 
+          INNER JOIN patent_department_db.users 
+            ON (users.id = user_sessions.user_id) 
+          INNER JOIN patent_department_db.groups 
+            ON (groups.id = users.group_id) 
+          WHERE user_sessions.id = ? AND user_sessions.valid_until >= NOW()";
+
         if ($stmt = $this->mysqli->prepare($query)) {
             $stmt->bind_param("s", $sessionId);
             $stmt->execute();
@@ -47,7 +59,9 @@ class User
     }
 
     private function insertSessionId($userId) {
-        $query = "INSERT INTO patent_department_db.user_sessions (id, user_id, valid_until) VALUES (?, ?, NOW() + INTERVAL 2 MINUTE )";
+        $query = "INSERT INTO patent_department_db.user_sessions (id, user_id, valid_until) 
+          VALUES (?, ?, NOW() + INTERVAL 2 MINUTE )";
+
         if ($stmt = $this->mysqli->prepare($query)) {
             do {
                 $newSessionId = substr(str_shuffle(MD5(microtime())), 0, 32);
@@ -64,7 +78,7 @@ class User
         return $this->insertSessionId($this->id);
     }
 
-    public function authorizeBySession($sessionId) {
+    public function authorizeBySessionId($sessionId) {
         list($userId, $userGroupId, $userLogin, $userName, $userGroupName) = $this->getUserIdBySessionId($sessionId);
         if ($userId) {
             $this->id = $userId;
