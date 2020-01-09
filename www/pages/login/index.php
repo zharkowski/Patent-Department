@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Вход</title>
-    <link rel="stylesheet" href="src/css/style.css">
+    <link rel="stylesheet" href="../../src/css/style.css">
 </head>
 <body>
 <h1>Патентный отдел</h1>
@@ -20,7 +20,7 @@
         <p class="login__error <?php if(!isset($_GET['isAuthorized'])) {echo 'visually-hidden';} ?>">Неверный логин или пароль</p>
         <input type="submit" placeholder="Войти">
     </form>
-    <a class="login__link--guest" href="/home.php">Войти как гость</a>
+<!--    <a class="login__link--guest" href="/home.php">Войти как гость</a>-->
     <a class="login__link--sign-up" href="#" >Регистрация</a>
 </section>
 </body>

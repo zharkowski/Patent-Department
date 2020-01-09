@@ -1,6 +1,7 @@
 <?php
 include_once 'login.php';
 include_once 'logout.php';
+include_once 'new_patent.php';
 //include_once 'edit_order_metadata.php';
 //include_once 'create_order_claim.php';
 //include_once 'set_order_status.php';
@@ -10,6 +11,7 @@ include_once 'logout.php';
 $methodCallbacks = array(
     'login' => 'login',
     'logout' => 'logout',
+    'new_patent.php' => 'new_patent.php'
 //    'edit_order_metadata' => 'edit_order_metadata',
 //    'create_order_claim' => 'create_order_claim',
 //    'set_order_status' => 'set_order_status',

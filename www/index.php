@@ -9,7 +9,7 @@
 
  if ($user->isAuthorized())
  {
-     header("Location: /");
+     header("Location: /pages/home");
      return;
  }
- header("Location: /login.php");
+ header("Location: /pages/login");

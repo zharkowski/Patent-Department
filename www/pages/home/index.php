@@ -5,7 +5,7 @@
     <title>Главная сраница</title>
 </head>
 <body>
-<h1>Главная страница</h1>
+<?php include_once(dirname(__DIR__).'/__components/header.php'); ?>
 <?php
 
 $passwords = [

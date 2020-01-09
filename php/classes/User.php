@@ -60,7 +60,7 @@ class User
 
     private function insertSessionId($userId) {
         $query = "INSERT INTO patent_department_db.user_sessions (id, user_id, valid_until) 
-          VALUES (?, ?, NOW() + INTERVAL 2 MINUTE )";
+          VALUES (?, ?, NOW() + INTERVAL 2 MINUTE)";
 
         if ($stmt = $this->mysqli->prepare($query)) {
             do {

@@ -11,11 +11,11 @@ function login(User $user)
 
     if (!$user->isAuthorized())
     {
-        header('Location: /login.php/?isAuthorized=0');
+        header('Location: /index.php/?isAuthorized=0');
         return;
     }
 
     $newSessionId = $user->createSessionId();
     setcookie("session_id", $newSessionId, time()+3600, '/');
-    header('Location: /home.php');
+    header('Location: /index.php');
 }
