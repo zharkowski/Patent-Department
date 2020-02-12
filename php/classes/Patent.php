@@ -23,23 +23,20 @@ class Patent
         $query = "SELECT p.id, p.title, pl.status
               FROM patents AS p
               INNER JOIN patent_logs AS pl
-                  ON (p.id = pl.patent_id AND p.id = ?)
-              WHERE pl.id IN (
-                  SELECT MAX(id)
-                  FROM patent_logs
-                  GROUP BY pl.patent_id
-              )";
+                  ON (p.id = pl.patent_id AND p.id = ?)";
         if ($stmt = $this->mysqli->prepare($query)) {
             $stmt->bind_param("i", $patentId);
             $stmt->execute();
-            $stmt->bind_result($patentId,$patentTitle,  $patentStatus);
+            $stmt->bind_result($patentId,$patentTitle, $patentStatus);
             $stmt->fetch();
             $stmt->close();
         }
-        if (isset($patentId) && isset($patentTitle) && isset($patentStatus)) {
+        if (isset($patentId) && isset($patentStatus)) {
             $this->id = $patentId;
-            $this->title = $patentTitle;
             $this->status = $patentStatus;
+        }
+        if (isset($patentTitle)) {
+            $this->title = $patentTitle;
         }
     }
 
