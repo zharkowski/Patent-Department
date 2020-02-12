@@ -1,3 +1,17 @@
+<?php
+    include_once '../../../php/classes/User.php';
+    include_once '../../../php/functions/checkPageAccessRight.php';
+    $user = new User();
+    if (isset($_COOKIE['session_id']))
+    {
+        $user->authorizeBySessionId($_COOKIE['session_id']);
+    }
+
+    if ($user->isAuthorized())
+    {
+        header("Location: /pages/home");    }
+?>
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -18,10 +32,17 @@
             <input class="login__input" type="password" name="password" placeholder="Пароль" required>
         </label>
         <p class="login__error <?php if(!isset($_GET['isAuthorized'])) {echo 'visually-hidden';} ?>">Неверный логин или пароль</p>
+        <br>
+<!--        <label>-->
+<!--            <input type="checkbox" class="login__foreign-computer" name="foreign-computer">-->
+<!--            Чужой компьютер-->
+<!--        </label>-->
+        <br>
         <input type="submit" placeholder="Войти">
     </form>
 <!--    <a class="login__link--guest" href="/home.php">Войти как гость</a>-->
-    <a class="login__link--sign-up" href="#" >Регистрация</a>
+    <a class="login__link login__link--sign-up" href="#" >Регистрация</a>
+    <script src="../../src/js/login.js"></script>
 </section>
 </body>
 </html>

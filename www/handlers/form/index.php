@@ -2,19 +2,19 @@
 include_once 'login.php';
 include_once 'logout.php';
 include_once 'new_patent.php';
+include_once 'set_patent_status.php';
 //include_once 'edit_order_metadata.php';
 //include_once 'create_order_claim.php';
-//include_once 'set_order_status.php';
 //include_once 'create_order_set.php';
 //include_once 'choose_order_set.php';
 
 $methodCallbacks = array(
     'login' => 'login',
     'logout' => 'logout',
-    'new_patent.php' => 'new_patent.php'
+    'new_patent' => 'new_patent',
+    'set_order_status' => 'set_order_status'
 //    'edit_order_metadata' => 'edit_order_metadata',
 //    'create_order_claim' => 'create_order_claim',
-//    'set_order_status' => 'set_order_status',
 //    'create_order_set' => 'create_order_set',
 //    'choose_order_set' => 'choose_order_set'
 );

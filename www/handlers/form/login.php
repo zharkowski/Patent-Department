@@ -11,11 +11,15 @@ function login(User $user)
 
     if (!$user->isAuthorized())
     {
-        header('Location: /index.php/?isAuthorized=0');
+        header('Location: /pages/login/?isAuthorized=0');
         return;
     }
 
     $newSessionId = $user->createSessionId();
-    setcookie("session_id", $newSessionId, time()+3600, '/');
-    header('Location: /index.php');
+
+    if (!isset($_POST['foreign-computer'])) {
+        setcookie("session_id", $newSessionId, time()+3600, '/');
+    }
+
+    header('Location: /');
 }
