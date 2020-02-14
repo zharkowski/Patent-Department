@@ -6,11 +6,11 @@ use DB\DBConnection as DBConnection;
 class Patent
 {
     private $id = null;
-    private $userId = null;
     private $title = null;
     private $status = null;
     private $roles = array();
-    private $filesId = null;
+    private $requestFileId = null;
+    private $descriptionFileId = null;
 
     private $mysqli = null;
     public function __construct()
@@ -23,7 +23,12 @@ class Patent
         $query = "SELECT p.id, p.title, pl.status
               FROM patents AS p
               INNER JOIN patent_logs AS pl
-                  ON (p.id = pl.patent_id AND p.id = ?)";
+                  ON (p.id = pl.patent_id AND p.id = ?)
+                  WHERE pl.id IN (
+                  SELECT MAX(id)
+                  FROM patent_logs
+                  GROUP BY patent_id
+              )";
         if ($stmt = $this->mysqli->prepare($query)) {
             $stmt->bind_param("i", $patentId);
             $stmt->execute();
@@ -53,7 +58,6 @@ class Patent
             $stmt_result = $stmt->get_result();
             if ($stmt_result->num_rows > 0) {
                 while($row_data = $stmt_result->fetch_assoc()) {
-                    echo $row_data['user_id'];
                     if (isset($this->roles[$row_data['role']])) {
                         $this->roles[$row_data['role']][] = $row_data['user_id'];
                     } else {
@@ -81,12 +85,12 @@ class Patent
         return $this->title;
     }
 
-    public function getFilesId() {
-        return $this->filesId;
+    public function getRequestFileId() {
+        return $this->requestFileId;
     }
 
-    public function createNewPatent() {
-
+    public function getDescriptionFileId() {
+        return $this->descriptionFileId;
     }
 
     public function setMetaData($title) {
@@ -102,6 +106,7 @@ class Patent
 
     public function getMetadata() {
         if (!($patentId = $this->id)) {
+            debug_print_backtrace();
             die('Ошибка! У патента не найден id');
         }
 
@@ -156,7 +161,7 @@ class Patent
         echo 'look';
 
         // делаем LOCK на нужном нам заказе
-        if ($skipLock != true) {
+        if (!$skipLock) {
             $query = "SELECT * FROM patents AS p WHERE p.id = ? FOR UPDATE;";
             if ($stmt = $this->mysqli->prepare($query)) {
                 $stmt->bind_param("i", $this->id);
@@ -166,7 +171,7 @@ class Patent
         }
 
         if ($status == "closed") {
-            // Здесь предполгагается код, который будет собирать патент, сейчас заглушка (15 сек ожидания)
+            // Здесь предполгагается код, который будет завершать оформление патента, сейчас заглушка (15 сек ожидания)
             sleep(15);
         }
 
@@ -193,9 +198,116 @@ class Patent
         );
     }
 
+    public function saveFiles() {
+        if (isset($_FILES['patentRequestFile']) && basename($_FILES['patentRequestFile']['name'] != "")) {
+            $patentRequestFileId = null;
+            $requestFileName = basename($_FILES['patentRequestFile']['name']);
+            $query = "INSERT INTO patent_request_files (patent_id, file_name) VALUES (?, ?)";
+            if ($stmt = $this->mysqli->prepare($query)) {
+                $stmt->bind_param('is', $this->id,$requestFileName);
+                $stmt->execute();
+                $patentRequestFileId = $this->mysqli->insert_id;
+                $stmt->close();
+            }
+
+            $targetPath = '../../../files/requests/' . $patentRequestFileId . '.pdf';
+            move_uploaded_file($_FILES['patentRequestFile']['tmp_name'], $targetPath);
+        }
+
+        if (isset($_FILES['patentDescriptionFile']) && basename($_FILES['patentDescriptionFile']['name'] != "")) {
+            $patentDescriptionFileId = null;
+            $descriptionFileName = basename($_FILES['patentDescriptionFile']['name']);
+            $query = "INSERT INTO patent_description_files (patent_id, file_name) VALUES (?, ?)";
+            if ($stmt = $this->mysqli->prepare($query)) {
+                $stmt->bind_param('is', $this->id,$descriptionFileName);
+                $stmt->execute();
+                $patentDescriptionFileId = $this->mysqli->insert_id;
+                $stmt->close();
+            }
+
+            $targetPath = '../../../files/descriptions/' . $patentDescriptionFileId . '.pdf';
+            move_uploaded_file($_FILES['patentDescriptionFile']['tmp_name'], $targetPath);
+        }
+    }
+
+    public function loadRequestsFiles()
+    {
+        $uploaded_files = "";
+        $uploadFolder = '../../../files/requests/';
+        $dh = opendir($uploadFolder);
+        $fileId = null;
+        $query = "SELECT id, file_name FROM patent_request_files WHERE id IN 
+          (SELECT MAX(id) FROM patent_request_files WHERE patent_id = ? GROUP BY patent_id)";
+        if ($stmt = $this->mysqli->prepare($query)) {
+            $stmt->bind_param("i", $this->id);
+            $stmt->execute();
+            $stmt->bind_result($fileId, $origialFileName);
+            $stmt->fetch();
+            $stmt->close();
+        }
+        while (($file = readdir($dh)) !== false)
+        {
+            if($file != '.' && $file != '..') {
+                if ($fileId.'.pdf' == $file) {
+                    $uploaded_files .= "<a href=\"/handlers/form/?method=get_request_file&file_id=$fileId\">$origialFileName</a>\n";
+                }
+            }
+        }
+        closedir($dh);
+        if(strlen($uploaded_files) == 0)
+        {
+            $uploaded_files = "<em>Файл не найден</em>";
+        }
+        return $uploaded_files;
+    }
+
+    public function loadDescriptionFiles()
+    {
+        $uploaded_files = "";
+        $uploadFolder = '../../../files/descriptions/';
+        $dh = opendir($uploadFolder);
+        $fileId = null;
+        $query = "SELECT id, file_name FROM patent_description_files WHERE id IN 
+          (SELECT MAX(id) FROM patent_description_files WHERE patent_id = ? GROUP BY patent_id)";
+        if ($stmt = $this->mysqli->prepare($query)) {
+            $stmt->bind_param("i", $this->id);
+            $stmt->execute();
+            $stmt->bind_result($fileId, $origialFileName);
+            $stmt->fetch();
+            $stmt->close();
+        }
+        while (($file = readdir($dh)) !== false)
+        {
+            if($file != '.' && $file != '..') {
+                if ($fileId.'.pdf' == $file) {
+                    $uploaded_files .= "<a href=\"/handlers/form/?method=get_description_file&file_id=$fileId\">$origialFileName</a>\n";
+                }
+            }
+        }
+        closedir($dh);
+        if(strlen($uploaded_files) == 0)
+        {
+            $uploaded_files = "<em>Файл не найден</em>";
+        }
+        return $uploaded_files;
+    }
+
+    public function getRequestFileNameByFileId($fileId) {
+        $fileName = null;
+        $query = "SELECT file_name FROM patent_request_files WHERE id = ?";
+        if ($stmt = $this->mysqli->prepare($query)) {
+            $stmt->bind_param("i", $fileId);
+            $stmt->execute();
+            $stmt->bind_result($fileName);
+            $stmt->fetch();
+            $stmt->close();
+        }
+        return $fileName;
+    }
+
     public function canUserEditMetadata(User $user) {
         // редактировать мета-данные запроса могут либо админы, либо владельцы этих патентов
-        if (!(($user->getGroupId() == 1) || in_array($user->getId(), $this->getRoles()['owner']))) {
+        if (!($user->getGroupId() == 2) || in_array($user->getId(), $this->getRoles()['owner'])) {
             return array(
                 'status' => 'fail',
                 'error_text' => 'Ошибка. У текущего пользователя нет прав для редактирования мета-данных патента'
@@ -203,10 +315,10 @@ class Patent
         }
 
         // проверяем, что сейчас статус editing
-        if ($this->getStatus() != 'editing') {
+        if ($this->getStatus() != 'editing' && $this->getStatus() != 'correcting') {
             return array(
                 'status' => 'fail',
-                'error_text' => 'Ошибка. Изменять мета-данные запроса можно только во время статуса editing'
+                'error_text' => 'Ошибка. Изменять мета-данные запроса можно только во время статуса editing или correcting'
             );
         }
 
@@ -243,9 +355,13 @@ function getPatentsForUser(User $user) {
     if ($user->getGroupId() == 2) {
         $query = "SELECT p.id, p.title, pl.status, pl.timestamp
             FROM patent_department_db.patents AS p
-                     INNER JOIN patent_logs AS pl
-                                ON (pl.patent_id = p.id)
-            
+                 INNER JOIN patent_logs AS pl
+                    ON (pl.patent_id = p.id)
+                WHERE pl.id IN (
+                SELECT MAX(id)
+                FROM patent_logs
+                GROUP BY patent_id
+            )
             ORDER BY pl.id DESC";
         $stmt = $mysqli->prepare($query);
     }
@@ -254,11 +370,15 @@ function getPatentsForUser(User $user) {
     if ($user->getGroupId() == 3) {
         $query = "SELECT DISTINCT p.id, p.title, pl.status, pl.timestamp, pl.id AS status_id
               FROM patent_department_db.patents AS p
-                       INNER JOIN patent_logs AS pl
-                                  ON (pl.patent_id = p.id)
-                       INNER JOIN patent_roles AS pr
-                                  ON (((pr.role = 'checker' AND pr.user_id = ?) OR (pl.status = 'checking_wait')) AND p.id = pr.patent_id)
-          
+                  INNER JOIN patent_logs AS pl
+                      ON (pl.patent_id = p.id)
+                  INNER JOIN patent_roles AS pr
+                      ON (((pr.role = 'checker' AND pr.user_id = ?) OR (pl.status = 'checking_wait')) AND p.id = pr.patent_id)
+              WHERE pl.id IN (
+                  SELECT MAX(id)
+                  FROM patent_logs
+                  GROUP BY patent_id
+              )
               ORDER BY pl.id DESC";
         if ($stmt = $mysqli->prepare($query)) {
             $userId = $user->getId();
@@ -274,7 +394,11 @@ function getPatentsForUser(User $user) {
                                   ON (pl.patent_id = p.id)
                   INNER JOIN patent_roles AS pr
                             ON (pr.role = 'owner' AND pr.user_id = ? AND p.id = pr.patent_id)
-
+              WHERE pl.id IN (
+                  SELECT MAX(id)
+                  FROM patent_logs
+                  GROUP BY patent_id
+              )
               ORDER BY pl.id DESC";
         if ($stmt = $mysqli->prepare($query)) {
             $userId = $user->getId();
@@ -298,14 +422,14 @@ function getPatentsForUser(User $user) {
 }
 
 /**
- * Проверяет, может ли юзер $user изменить статус у ордера $order на новый статус $new_order_status
+ * Проверяет, может ли юзер $user изменить статус у патента $patent на новый статус $new_patent_status
  * @param User $user
  * @param Patent $patent
  * @param string $newPatentStatus
  * @param string changeType
  * @return array canEditPatentStatus
  */
-function checkPermissionsForOrderStatus(User $user, Patent $patent, $newPatentStatus, $newPatentStatusReason) {
+function checkPermissionsForPatentStatus(User $user, Patent $patent, $newPatentStatus, $newPatentStatusReason) {
     $patent->loadRoles();
     $patentRoles = $patent->getRoles();
 
@@ -328,10 +452,10 @@ function checkPermissionsForOrderStatus(User $user, Patent $patent, $newPatentSt
         }
 
         $title = $patent->getMetadata();
-        if (!isset($title) || !strlen($title) || !$patent->getFilesId() == null) { //НАДО ДОБАВИТЬ ПРОВЕРКУ НА НАЛИЧИЕ ФАЙЛОВ
+        if (!isset($title) || !strlen($title) || !$patent->getRequestFileId() == null || !$patent->getDescriptionFileId() == null) { //НАДО ДОБАВИТЬ ПРОВЕРКУ НА НАЛИЧИЕ ФАЙЛОВ
             return array(
                 'access' => false,
-                'error_text' => 'Нельзя отправить заказ в ожидание проверки, если у заказа нет названия'
+                'error_text' => 'Нельзя отправить патент в ожидание проверки, если у патента нет названия и файлов с заявлениием и описанием'
             );
         }
 
@@ -350,11 +474,34 @@ function checkPermissionsForOrderStatus(User $user, Patent $patent, $newPatentSt
             );
         }
 
-        // проверяем, что сейчас статус checking_wait
-        if ($patent->getStatus() != 'checking_wait') {
+        // проверяем, что сейчас статус checking_wait или correcting
+        if (!($patent->getStatus() == 'checking_wait')) {
             return array(
                 'access' => false,
-                'error_text' => 'Статус request_checking можно получить только из checking_wait'
+                'error_text' => 'Статус request_checking можно получить только из checking_wait или correcting'
+            );
+        }
+
+        return array(
+            'access' => true
+        );
+    }
+
+    // request_checking (проверка заявления) - появляется, когда заказ выбирается кем-то из сотрудников (тут надо ещё роль выставить)
+    if (($newPatentStatus == 'request_checking') && ($newPatentStatusReason == 'fail')) {
+        // перейти у проверке заявления может либо тот владелец, либо админ
+        if (!(($user->getGroupId() == 2) || in_array($user->getId(), $patentRoles['owner']))) {
+            return array(
+                'access' => false,
+                'error_text' => 'У текущего пользователя нет прав для задания данного статуса'
+            );
+        }
+
+        // проверяем, что сейчас статус checking_wait или correcting
+        if (!($patent->getStatus() == 'correcting')) {
+            return array(
+                'access' => false,
+                'error_text' => 'Статус request_checking можно получить только из checking_wait или correcting'
             );
         }
 
@@ -364,7 +511,7 @@ function checkPermissionsForOrderStatus(User $user, Patent $patent, $newPatentSt
     }
 
     //plagiarism__checking (проверка на плагиат) - появляется после прохождения проверки заявления
-    if (($newPatentStatus == 'plagiarism_checking') && ($newPatentStatusReason == 'default')) {
+    if ($newPatentStatus == 'plagiarism_checking') {
         // перейти у проверке на  плагиат может либо проверяющий сотрудник, либо админ
         if (!(($user->getGroupId() == 2) || (in_array($user->getId(), $patentRoles['checker'])))) {
             return array(
@@ -387,7 +534,7 @@ function checkPermissionsForOrderStatus(User $user, Patent $patent, $newPatentSt
     }
 
     // description_checking (проверка описания патента) - появляется, после прохождения проверки на плагиат
-    if (($newPatentStatus == 'description_checking') && ($newPatentStatusReason == 'default')) {
+    if ($newPatentStatus == 'description_checking') {
         // перекинуть в выборку может либо проверяющий сотрудник, либо админ
         if (!(($user->getGroupId() == 2) || (in_array($user->getId(), $patentRoles['checker'])))) {
             return array(
@@ -410,30 +557,30 @@ function checkPermissionsForOrderStatus(User $user, Patent $patent, $newPatentSt
     }
 
     // editing (редактировние) - может отправить сотрудник если патент требует доработок
-    if (($newPatentStatus == 'editing') && ($newPatentStatusReason == 'fail')) {
-        // отправлять может либо админ, либо проверяющий
-        if (!(($user->getGroupId() == 2) || in_array($user->getId(), $patentRoles['checker']))) {
-            return array(
-                'access' => false,
-                'error_text' => 'У текущего пользователя нет прав для задания данного статуса'
-            );
-        }
+//    if (($newPatentStatus == 'editing') && ($newPatentStatusReason == 'fail')) {
+//        // отправлять может либо админ, либо проверяющий
+//        if (!(($user->getGroupId() == 2) || in_array($user->getId(), $patentRoles['checker']))) {
+//            return array(
+//                'access' => false,
+//                'error_text' => 'У текущего пользователя нет прав для задания данного статуса'
+//            );
+//        }
+//
+//        // проверяем, что сейчас статус request_checking или description_checking
+//        if (!($patent->getStatus() == 'request_checking' || $patent->getStatus() == 'description_checking')) {
+//            return array(
+//                'access' => false,
+//                'error_text' => 'Статус editing можно получить только из request_checking или description_checking'
+//            );
+//        }
+//
+//        return array(
+//            'access' => true
+//        );
+//    }
 
-        // проверяем, что сейчас статус request_checking или description_checking
-        if (!($patent->getStatus() == 'request_checking' || $patent->getStatus() == 'description_checking')) {
-            return array(
-                'access' => false,
-                'error_text' => 'Статус editing можно получить только из request_checking или description_checking'
-            );
-        }
-
-        return array(
-            'access' => true
-        );
-    }
-
-    // editing (редактировние) - может владелец если решит сделать доработки
-    if (($newPatentStatus == 'editing') && ($newPatentStatusReason == 'fail')) {
+    // editing (редактировние) - может владелец если решит сделать доработки (до того, как сотрудник возмет на проверку)
+    if ($newPatentStatus == 'editing') {
         // отправлять может либо админ, либо владелец патента
         if (!(($user->getGroupId() == 2) || in_array($user->getId(), $patentRoles['owner']))) {
             return array(
@@ -511,11 +658,11 @@ function checkPermissionsForOrderStatus(User $user, Patent $patent, $newPatentSt
             );
         }
 
-        // проверяем, что сейчас статус description_checking
-        if ($patent->getStatus() != 'description_checking') {
+        // проверяем, что сейчас статус description_checking или plagiarism_checking
+        if (!($patent->getStatus() == 'description_checking' || $patent->getStatus() == 'plagiarism_checking')) {
             return array(
                 'access' => false,
-                'error_text' => 'Статус denied можно получить только из description_checking'
+                'error_text' => 'Статус denied можно получить только из description_checking или plagiarism_checking'
             );
         }
 
@@ -547,7 +694,52 @@ function checkPermissionsForOrderStatus(User $user, Patent $patent, $newPatentSt
         );
     }
 
+    //correcting (корректтировка) - ставится в случае необходимости корректировки данных или если пользователь сам решил поменять данные
+    if (($newPatentStatus == 'correcting') && ($newPatentStatusReason = 'default')) {
+        //поставтить этот статус может админ или проверяющий заявку
+        if (!(($user->getGroupId() == 2) || in_array($user->getId(), $patentRoles['owner']))) {
+            return array(
+                'access' => false,
+                'error_text' => 'У текущего пользователя нет прав для задания данного статуса'
+            );
+        }
+
+        // проверяем, что сейчас статус request_checking или description_checking
+        if (!($patent->getStatus() == 'request_checking' || $patent->getStatus() == 'description_checking' || $patent->getStatus() == 'plagiarism_checking')) {
+            return array(
+                'access' => false,
+                'error_text' => 'Статус correcting от текущего пользователя можно получить только из request_checking или description_checking'
+            );
+        }
+
+        return array(
+            'access' => true
+        );
+    }
+
+    if (($newPatentStatus == 'correcting') && ($newPatentStatusReason = 'fail')) {
+        //поставтить этот статус может админ или проверяющий заявку
+        if (!(($user->getGroupId() == 2) || in_array($user->getId(), $patentRoles['checker']))) {
+            return array(
+                'access' => false,
+                'error_text' => 'У текущего пользователя нет прав для задания данного статуса'
+            );
+        }
+
+        // проверяем, что сейчас статус request_checking или description_checking
+        if (!($patent->getStatus() == 'request_checking' || $patent->getStatus() == 'description_checking')) {
+            return array(
+                'access' => false,
+                'error_text' => 'Статус correcting от текущего пользователя можно получить только из request_checking или description_checking'
+            );
+        }
+
+        return array(
+            'access' => true
+        );
+    }
+
     /* дополнительные правила записываем сюда */
 
-    die('Неизвестный статус патента');
+    die('Неизвестный статус патента '.$newPatentStatus);
 }

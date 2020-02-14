@@ -8,19 +8,22 @@
     }
 ?>
 <div class="header">
-    <a class="header__button header__home-link" href="/pages/home/">Домой</a>
-    <?php if ($user->checkRights('page', 'my-patents')) {?>
-        <a class="header__button header__catalogue-link" href="/pages/my-patents">Мои патенты</a>
-    <?php } ?>
-    <?php if ($user->checkRights('page', 'new-patent')) {?>
-        <a class="header__button header__new-order-link" href="/handlers/form/?method=new_patent">Создать заявку на патент</a>
-    <?php } ?>
-    <?php if ($user->checkRights('page', 'patent-requests')) {?>
-        <a class="header__button header__catalogue-link" href="/pages/patent-requests">Заявки на патенты</a>
-    <?php } ?>
-    <?php if ($user->checkRights('page', 'patent-check')) {?>
-        <a class="header__button header__catalogue-link" href="/pages/patent-check">Рассмотрение заявки</a>
-    <?php } ?>
+    <h1 class="header--title">Патентный отдел</h1>
+    <div class="main-nav">
+        <a class="header__button header__home-link" href="/pages/home/">Домой</a>
+    <!--    --><?php //if ($user->checkRights('page', 'my-patents')) {?>
+    <!--        <a class="header__button header__catalogue-link" href="/pages/my-patents">Мои патенты</a>-->
+    <!--    --><?php //} ?>
+        <?php if ($user->checkRights('page', 'new-patent')) {?>
+            <a class="header__button header__new-order-link" href="/handlers/form/?method=new_patent">Создать заявку на патент</a>
+        <?php } ?>
+    <!--    --><?php //if ($user->checkRights('page', 'patent-requests')) {?>
+    <!--        <a class="header__button header__catalogue-link" href="/pages/patent-requests">Заявки на патенты</a>-->
+    <!--    --><?php //} ?>
+    <!--    --><?php //if ($user->checkRights('page', 'patent-check')) {?>
+    <!--        <a class="header__button header__catalogue-link" href="/pages/patent-check">Рассмотрение заявки</a>-->
+    <!--    --><?php //} ?>
+    </div>
     <div class="profile-box">
         <div class="profile-box__login"><?php echo $user->getUserName() ?></div>
         <div class="profile-box__role"><?php echo $user->getGroupName() ?></div>
@@ -59,6 +62,9 @@ function formatStatus($status) {
     } else if ($status == 'plagiarism') {
         $status_class = 'order-item__status-plagiarism';
         $status_text = 'Плагиат';
+    } else if ($status == 'correcting') {
+        $status_class = 'order-item__status-correcting';
+        $status_text = 'Необходимо отредактировать данные';
     }
 
     return array($status_class, $status_text);

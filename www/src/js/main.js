@@ -73,7 +73,7 @@
     }
 
     var sessionExpireTimeout = undefined;
-    var userActionFrequency = 120*1000;
+    var userActionFrequency = 60*1000;
     var lastUserActionTimestamp = +new Date();
     var cookieExpireTime = 120*1000;
     var popupShown = false;

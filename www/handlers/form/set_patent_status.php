@@ -14,13 +14,13 @@ function set_patent_status(User $user) {
     $patent->loadSelfFromId($patentId);
 
     $skipLock = false;
-    if ($_POST['skip_lock']) {
+    if (isset($_GET['skip_lock'])) {
         $skipLock = true;
     }
 
     $newPatentStatus = $_POST['new_patent_status'];
     $newPatentStatusReason = $_POST['new_patent_status_reason'];
-    $canEditPatent = checkPermissionsForOrderStatus($user, $patent, $newPatentStatus, $newPatentStatusReason);
+    $canEditPatent = checkPermissionsForPatentStatus($user, $patent, $newPatentStatus, $newPatentStatusReason);
 
     if ($canEditPatent['access'] == false) {
         header("Location: /pages/patent/?id=" . $patent->getId() . "&error_text=" . urldecode($canEditPatent['error_text']));

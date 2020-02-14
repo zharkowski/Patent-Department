@@ -119,7 +119,7 @@ class User
         return isset($groupRigthId);
     }
 
-    public function isOwnerOrChecker($patentId) {
+    public function isOwnerOf($patentId) {
         $roles = array();
         $userId = $this->getId();
         $query = "SELECT role FROM patent_department_db.patent_roles WHERE user_id = ? AND patent_id = ?";
@@ -134,7 +134,25 @@ class User
             }
             $stmt->close();
         }
-        return in_array('owner', $roles) || in_array('checker', $roles);
+        return in_array('owner', $roles);
+    }
+
+    public function isCheckerOf($patentId) {
+        $roles = array();
+        $userId = $this->getId();
+        $query = "SELECT role FROM patent_department_db.patent_roles WHERE user_id = ? AND patent_id = ?";
+        if ($stmt = $this->mysqli->prepare($query)) {
+            $stmt->bind_param("ii", $userId, $patentId);
+            $stmt->execute();
+            $stmt_result = $stmt->get_result();
+            if ($stmt_result->num_rows > 0) {
+                while ($row_data = $stmt_result->fetch_assoc()['role']) {
+                    array_push($roles, $row_data);
+                }
+            }
+            $stmt->close();
+        }
+        return in_array('checker', $roles);
     }
 
     public function getId() {
