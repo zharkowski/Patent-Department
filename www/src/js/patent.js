@@ -22,3 +22,14 @@
         });
     }
 })();
+
+(function() {
+    var errorWrapper = document.querySelector('.error-wrapper');
+    if (!errorWrapper) {
+        return;
+    }
+    var errorCloseBtn = errorWrapper.querySelector('.error-close-btn');
+    errorCloseBtn.addEventListener('click', function() {
+        errorWrapper.remove();
+    });
+})();

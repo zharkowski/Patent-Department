@@ -27,17 +27,19 @@ $patents = getPatentsForUser($user);
 <?php include_once(dirname(__DIR__).'/__components/header.php'); ?>
 
     <div class="patents-wrapper">
-        <div class="patents-grid">
+        <ul class="patents-list">
             <?php foreach($patents as $patent) {
                 list($status_class, $status_text) = formatStatus($patent['status']);
                 ?>
-                <a class="order-item <?php echo $status_class ?>" href="/pages/patent/?id=<?php echo $patent['id'] ?>">
-                    <div class="order-item__title"><?php echo $patent['title'] ? $patent['title'] : 'Без названия (' . $patent['id'] . ')' ?></div>
-                    <div class="order-item__status-text"><?php echo $status_text ?></div>
-                    <div class="order-item__update-time">Обновлено <?php echo $patent['timestamp'] ?> UTC</div>
-                </a>
+                <li class="patents-list__card">
+                    <a class="patent-item patent-item__link <?php echo $status_class ?>" href="/pages/patent/?id=<?php echo $patent['id'] ?>">
+                        <div class="patent-item patent-item__title"><?php echo $patent['title'] ? $patent['title'] : 'Без названия (' . $patent['id'] . ')' ?></div>
+                        <div class="patent-item patent-item__status-text">Статус: <?php echo $status_text ?></div>
+                        <div class="patent-item patent-item__update-time">Обновлено <?php echo $patent['timestamp'] ?></div>
+                    </a>
+                </li>
             <?php } ?>
-        </div>
+        </ul>
     </div>
 
     <script src="../../src/js/main.js"></script>

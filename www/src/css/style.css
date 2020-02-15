@@ -41,6 +41,78 @@ body {
     font-size: 15px;
 }
 
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+a {
+    color: #000;
+    text-decoration: none;
+}
+
+.button {
+    width: 200px;
+    min-height: 40px;
+    background-color: #f0c52e;
+    display: block;
+    padding: 8px 20px;
+    font-family: "Gilroy-ExtraBold","Arial",sans-serif;
+    font-size: 18px;
+    line-height: 24px;
+    text-transform: uppercase;
+    text-align: center;
+    letter-spacing: 3.5px;
+    color: #000;
+    word-wrap: break-word;
+    border: none;
+}
+
+.button:hover {
+    outline: 1px solid black;
+}
+
+.login--submit {
+    margin: 0 auto;
+    margin-bottom: 20px;
+}
+
+.login-wrapper {
+    width: 500px;
+    margin: 0 auto;
+    margin-top: 200px;
+    text-align: center;
+}
+
+.login {
+    padding: 10px 30px 30px;
+    background-color: #f8e297;
+}
+
+.login__input {
+    margin-bottom: 20px;
+    width: 100%;
+    height: 50px;
+    padding: 10px 20px;
+    box-sizing: border-box;
+
+    font-family: "OpenSans","Arial",sans-serif;
+    font-size: 14px;
+    line-height: 18px;
+    border: none;
+}
+
+.login__input:hover {
+    background-color: #e5e5e5;
+}
+
+.login__input:focus {
+    background-color: #fff;
+    outline: 3px solid #f0c52e;
+    color: #000;
+}
+
+
 .header {
     display: flex;
     justify-content: space-between;
@@ -48,8 +120,7 @@ body {
     width: 1200px;
     margin: 0 auto;
     margin-top: 60px;
-    padding: 20px;
-    padding-top: 40px;
+    padding: 40px 50px;
     background-color: #f8e297;
 }
 
@@ -64,12 +135,177 @@ body {
     text-transform: uppercase;
 }
 
+.main-nav {
+    display: flex;
+    justify-content: left;
+}
+
+.main-nav li {
+    display: block;
+    min-height: 40px;
+    margin-right: 50px;
+    font-family: "Gilroy-ExtraBold","Arial",sans-serif;
+    font-size: 18px;
+    line-height: 36px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: black;
+}
+
+.main-nav li:hover {
+    opacity: .6;
+}
+
 .profile-box {
     text-align: right;
+}
+
+.profile-box__logout {
+    text-decoration: underline;
+}
+
+.profile-box__logout:hover {
+    opacity: .6;
+    text-decoration: none;
 }
 
 .patents-wrapper {
     width: 1200px;
     margin: 0 auto;
     padding: 20px;
+}
+
+.patents-list__card {
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+    border-bottom:  1px solid black;
+    min-height: 100px;
+}
+
+.patent-item {
+    margin-bottom: 10px;
+}
+
+.patent-item__link {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.patents-list__card:hover {
+    opacity: 0.6;
+}
+
+.patent-item__title {
+    font-family: "OpenSans", Arial, sans-serif;
+    font-weight: bold;
+}
+
+.patent-back-button {
+    text-decoration: underline;
+}
+
+.patent-back-button:hover {
+    opacity: .6;
+    text-decoration: none;
+}
+
+.patent-metadata__title {
+    font-size: 35px;
+    border-bottom: 2px solid black;
+}
+
+.patent-data {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.patent-data__link {
+    text-decoration: underline;
+}
+
+.patent-data__link:hover {
+    opacity: .6;
+    text-decoration: none;
+}
+
+.patent-metadata__view {
+    margin-bottom: 50px;
+}
+
+.patent-statement {
+    font-family: Gilroy, Arial, sans-serif;
+}
+
+.patent-block {
+    margin-bottom: 50px;
+}
+
+.metadata-input {
+    display: block;
+    width: 600px;
+    margin-bottom: 10px;
+}
+
+.patent-metadata__form {
+    font-size: 20px;
+}
+
+.patent-metadata__form__title-label span {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.patent-metadata__form__title-input {
+    width: 300px;
+    height: 50px;
+    padding: 10px 20px;
+    box-sizing: border-box;
+
+    font-family: "OpenSans","Arial",sans-serif;
+    font-size: 20px;
+    line-height: 18px;
+    outline: 2px solid black;
+    border: none;
+}
+
+.patent-metadata__form__title-input:hover {
+    background-color: #e5e5e5;
+}
+
+.patent-metadata__form__title-input:focus {
+    background-color: #fff;
+    outline: 3px solid #f0c52e;
+    color: #000;
+}
+
+.status-control__list {
+    display: flex;
+    /*flex-wrap: wrap;*/
+    justify-content: center;
+}
+
+.status-control__item {
+    min-height: 40px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+.status-control__item button {
+    display: block;
+    height: 100%;
+    padding: 10px 20px;
+    box-sizing: border-box;
+    background-color: #f8e297;
+
+    font-family: "OpenSans","Arial",sans-serif;
+    font-size: 20px;
+    line-height: 18px;
+    border: none;
+}
+
+.status-control__item button:hover {
+    outline: 1px solid black;
+    background-color: #f0c52e;
+
 }

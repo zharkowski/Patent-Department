@@ -307,7 +307,7 @@ class Patent
 
     public function canUserEditMetadata(User $user) {
         // редактировать мета-данные запроса могут либо админы, либо владельцы этих патентов
-        if (!($user->getGroupId() == 2) || in_array($user->getId(), $this->getRoles()['owner'])) {
+        if (!($user->getGroupId() == 2 || in_array($user->getId(), $this->getRoles()['owner']))) {
             return array(
                 'status' => 'fail',
                 'error_text' => 'Ошибка. У текущего пользователя нет прав для редактирования мета-данных патента'
@@ -695,7 +695,7 @@ function checkPermissionsForPatentStatus(User $user, Patent $patent, $newPatentS
     }
 
     //correcting (корректтировка) - ставится в случае необходимости корректировки данных или если пользователь сам решил поменять данные
-    if (($newPatentStatus == 'correcting') && ($newPatentStatusReason = 'default')) {
+    if (($newPatentStatus == 'correcting') && ($newPatentStatusReason == 'default')) {
         //поставтить этот статус может админ или проверяющий заявку
         if (!(($user->getGroupId() == 2) || in_array($user->getId(), $patentRoles['owner']))) {
             return array(
@@ -717,7 +717,7 @@ function checkPermissionsForPatentStatus(User $user, Patent $patent, $newPatentS
         );
     }
 
-    if (($newPatentStatus == 'correcting') && ($newPatentStatusReason = 'fail')) {
+    if (($newPatentStatus == 'correcting') && ($newPatentStatusReason == 'fail')) {
         //поставтить этот статус может админ или проверяющий заявку
         if (!(($user->getGroupId() == 2) || in_array($user->getId(), $patentRoles['checker']))) {
             return array(

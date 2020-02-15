@@ -9,13 +9,18 @@
 ?>
 <div class="header">
     <h1 class="header--title">Патентный отдел</h1>
-    <div class="main-nav">
-        <a class="header__button header__home-link" href="/pages/home/">Домой</a>
+    <ul class="main-nav">
+        <li class="main-nav__element">
+            <a class="header__button header__home-link" href="/pages/home/">Домой</a>
+        </li>
     <!--    --><?php //if ($user->checkRights('page', 'my-patents')) {?>
     <!--        <a class="header__button header__catalogue-link" href="/pages/my-patents">Мои патенты</a>-->
     <!--    --><?php //} ?>
+
         <?php if ($user->checkRights('page', 'new-patent')) {?>
+        <li class="main-nav__element">
             <a class="header__button header__new-order-link" href="/handlers/form/?method=new_patent">Создать заявку на патент</a>
+        </li>
         <?php } ?>
     <!--    --><?php //if ($user->checkRights('page', 'patent-requests')) {?>
     <!--        <a class="header__button header__catalogue-link" href="/pages/patent-requests">Заявки на патенты</a>-->
@@ -23,7 +28,10 @@
     <!--    --><?php //if ($user->checkRights('page', 'patent-check')) {?>
     <!--        <a class="header__button header__catalogue-link" href="/pages/patent-check">Рассмотрение заявки</a>-->
     <!--    --><?php //} ?>
-    </div>
+        <li class="main-nav__element">
+            <a class="header__button header__new-order-link" href="#">Регламент подачи документов</a>
+        </li>
+    </ul>
     <div class="profile-box">
         <div class="profile-box__login"><?php echo $user->getUserName() ?></div>
         <div class="profile-box__role"><?php echo $user->getGroupName() ?></div>

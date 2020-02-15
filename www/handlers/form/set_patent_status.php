@@ -33,7 +33,7 @@ function set_patent_status(User $user) {
         return;
     }
 
-    if ($newPatentStatus == 'request_checking') {
+    if ($newPatentStatus == 'request_checking' && $user->getGroupId() == 3) {
         $patent->addRole($user, 'checker');
     }
     /* дополнительные правила записываем сюда */
